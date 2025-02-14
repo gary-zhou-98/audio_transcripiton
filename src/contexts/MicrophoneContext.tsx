@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 
 interface MicrophoneContextType {
   isRecording: boolean;
@@ -8,6 +15,7 @@ interface MicrophoneContextType {
   stopRecording: () => Promise<void>;
   error: string | null;
   audioStream: MediaStream | null;
+  audioChunks: Blob[] | null;
 }
 
 const MicrophoneContext = createContext<MicrophoneContextType | undefined>(
@@ -25,15 +33,25 @@ export const MicrophoneProvider = ({
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  useEffect(() => {
+    return () => {
+      if (audioStream) {
+        audioStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [audioStream]);
 
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
 
       recorder.addEventListener("dataavailable", (event) => {
         if (event.data.size > 0) {
-          console.log("Microphone data:", event.data);
+          setAudioChunks((prevChunks) => [...prevChunks, event.data]);
         }
       });
 
@@ -54,6 +72,7 @@ export const MicrophoneProvider = ({
       mediaRecorder.stream.getTracks().forEach((track) => track.stop());
       setIsRecording(false);
       setAudioStream(null);
+      setAudioChunks([]);
     }
   }, [mediaRecorder]);
 
@@ -65,6 +84,7 @@ export const MicrophoneProvider = ({
         stopRecording,
         error,
         audioStream,
+        audioChunks,
       }}
     >
       {children}

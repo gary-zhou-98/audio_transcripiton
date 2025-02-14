@@ -5,7 +5,6 @@ import TranscriptionBox from "@/components/TranscriptionBox/TranscriptionBox";
 import Button from "@/components/Button/Button";
 import { useMicrophone } from "@/contexts/MicrophoneContext";
 import { useEffect } from "react";
-import AudioVisualizer from "@/components/AudioVisualizer/AudioVisualizer";
 
 export default function Home() {
   const { startRecording, stopRecording } = useMicrophone();
@@ -30,7 +29,6 @@ export default function Home() {
 
   return (
     <div className="page-container relative">
-      <AudioVisualizer />
       <Header />
       <main className="main-content">
         <TranscriptionBox />
