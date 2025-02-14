@@ -1,12 +1,24 @@
 import React from "react";
 import "./TranscriptionBox.css";
 
-const TranscriptionBox = () => {
+interface TranscriptionBoxProps {
+  transcription: string;
+}
+
+const TranscriptionBox = ({ transcription }: TranscriptionBoxProps) => {
+  if (!transcription) {
+    return (
+      <div className="transcription-box">
+        <div className="transcription-content">
+          Your transcription will appear here...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="transcription-box">
-      <div className="transcription-content">
-        Your transcription will appear here...
-      </div>
+      <div className="transcription-content">{transcription}</div>
     </div>
   );
 };
