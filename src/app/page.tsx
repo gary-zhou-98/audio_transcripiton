@@ -10,25 +10,25 @@ export default function Home() {
   const { isRecording, startRecording, stopRecording } = useMicrophone();
 
   useEffect(() => {
-    // Request microphone permissions when component mounts
-    const initializeMicrophone = async () => {
-      try {
-        await startRecording();
-      } catch (err) {
-        console.error("Failed to initialize microphone:", err);
-      }
-    };
-
-    initializeMicrophone();
+    // Only initialize microphone if not already recording
+    if (!isRecording) {
+      const initializeMicrophone = async () => {
+        try {
+          await startRecording();
+        } catch (err) {
+          console.error("Failed to initialize microphone:", err);
+        }
+      };
+      initializeMicrophone();
+    }
 
     // Cleanup: stop recording when component unmounts
     return () => {
       stopRecording();
     };
-  }, []);
+  }, []); // Only run on mount and unmount
 
   const handleButtonClick = () => {
-    console.log("Button clicked", isRecording);
     if (isRecording) {
       stopRecording();
     } else {
