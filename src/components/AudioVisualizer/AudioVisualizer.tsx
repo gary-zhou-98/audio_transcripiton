@@ -2,10 +2,14 @@
 
 import React, { useEffect, useRef } from "react";
 import "./AudioVisualizer.css";
+import { useMicrophone } from "@/contexts/MicrophoneContext";
 
 const AudioVisualizer = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
+  const { audioStream } = useMicrophone();
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -14,7 +18,6 @@ const AudioVisualizer = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size to match container
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
@@ -22,41 +25,47 @@ const AudioVisualizer = () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // Animation variables
-    const particles: { x: number; y: number; radius: number; speed: number }[] =
-      [];
-    const particleCount = 50;
+    // Set up audio analyzer if stream is available
+    if (audioStream) {
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(audioStream);
+      const analyser = audioContext.createAnalyser();
 
-    // Initialize particles
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 2 + 1,
-        speed: Math.random() * 0.5 + 0.2,
-      });
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+      dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
     }
 
-    // Animation function
     const animate = () => {
-      ctx.fillStyle = "rgba(17, 24, 39, 0.1)"; // Slightly transparent dark background
+      ctx.fillStyle = "rgba(17, 24, 39, 0.1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach((particle) => {
+      if (analyserRef.current && dataArrayRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+
+        const barWidth = canvas.width / dataArrayRef.current.length;
+        const centerY = canvas.height / 2;
+
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.fill();
+        ctx.moveTo(0, centerY);
 
-        // Move particle up
-        particle.y -= particle.speed;
+        for (let i = 0; i < dataArrayRef.current.length; i++) {
+          const x = i * barWidth;
+          const amplitude = dataArrayRef.current[i] / 255; // Normalize to 0-1
+          const y = centerY + Math.sin(x * 0.05) * amplitude * 100;
 
-        // Reset particle position when it reaches top
-        if (particle.y < -particle.radius) {
-          particle.y = canvas.height + particle.radius;
-          particle.x = Math.random() * canvas.width;
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
         }
-      });
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
 
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -69,7 +78,7 @@ const AudioVisualizer = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [audioStream]);
 
   return <canvas ref={canvasRef} className="audio-visualizer" />;
 };

@@ -7,6 +7,7 @@ interface MicrophoneContextType {
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<void>;
   error: string | null;
+  audioStream: MediaStream | null;
 }
 
 const MicrophoneContext = createContext<MicrophoneContextType | undefined>(
@@ -23,6 +24,7 @@ export const MicrophoneProvider = ({
   );
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
   const startRecording = useCallback(async () => {
     try {
@@ -31,13 +33,13 @@ export const MicrophoneProvider = ({
 
       recorder.addEventListener("dataavailable", (event) => {
         if (event.data.size > 0) {
-          // Handle the recorded Microphone data here
           console.log("Microphone data:", event.data);
         }
       });
 
       recorder.start();
       setMediaRecorder(recorder);
+      setAudioStream(stream);
       setIsRecording(true);
       setError(null);
     } catch (err) {
@@ -51,6 +53,7 @@ export const MicrophoneProvider = ({
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach((track) => track.stop());
       setIsRecording(false);
+      setAudioStream(null);
     }
   }, [mediaRecorder]);
 
@@ -61,6 +64,7 @@ export const MicrophoneProvider = ({
         startRecording,
         stopRecording,
         error,
+        audioStream,
       }}
     >
       {children}
