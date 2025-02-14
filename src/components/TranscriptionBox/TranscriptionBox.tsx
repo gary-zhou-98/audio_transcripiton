@@ -5,8 +5,8 @@ interface TranscriptionBoxProps {
   transcription: string;
 }
 
-const TranscriptionBox = ({ transcription }: TranscriptionBoxProps) => {
-  if (!transcription) {
+const TranscriptionBox = ({ transcription = "" }: TranscriptionBoxProps) => {
+  if (!transcription || transcription.trim() === "") {
     return (
       <div className="transcription-box">
         <div className="transcription-content">
