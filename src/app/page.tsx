@@ -7,7 +7,7 @@ import { useMicrophone } from "@/contexts/MicrophoneContext";
 import { useEffect } from "react";
 
 export default function Home() {
-  const { startRecording, stopRecording } = useMicrophone();
+  const { isRecording, startRecording, stopRecording } = useMicrophone();
 
   useEffect(() => {
     // Request microphone permissions when component mounts
@@ -25,14 +25,26 @@ export default function Home() {
     return () => {
       stopRecording();
     };
-  }, [startRecording, stopRecording]);
+  }, []);
+
+  const handleButtonClick = () => {
+    console.log("Button clicked", isRecording);
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
 
   return (
     <div className="page-container relative">
       <Header />
       <main className="main-content">
         <TranscriptionBox />
-        <Button label="Start" onButtonClick={() => {}} />
+        <Button
+          label={isRecording ? "Stop" : "Start"}
+          onButtonClick={handleButtonClick}
+        />
       </main>
     </div>
   );
