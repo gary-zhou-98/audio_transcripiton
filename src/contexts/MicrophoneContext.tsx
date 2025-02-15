@@ -15,7 +15,7 @@ interface MicrophoneContextType {
   stopRecording: () => Promise<void>;
   error: string | null;
   audioStream: MediaStream | null;
-  audioChunks: Blob[] | null;
+  audioBlob: Blob | null;
 }
 
 const MicrophoneContext = createContext<MicrophoneContextType | undefined>(
@@ -33,7 +33,7 @@ export const MicrophoneProvider = ({
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   useEffect(() => {
     return () => {
@@ -45,18 +45,22 @@ export const MicrophoneProvider = ({
 
   const startRecording = useCallback(async () => {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("user media is not supported");
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
 
       recorder.addEventListener("dataavailable", (event) => {
-        if (event.data.size > 0) {
-          setAudioChunks((prevChunks) => [...prevChunks, event.data]);
-          console.log("audioChunks: ", audioChunks);
+        if (event.data) {
+          setAudioBlob(event.data);
+        } else {
+          console.log("Skipping empty or invalid audio chunk");
         }
       });
 
-      recorder.start();
+      recorder.start(100);
       setMediaRecorder(recorder);
       setAudioStream(stream);
       setIsRecording(true);
@@ -73,7 +77,7 @@ export const MicrophoneProvider = ({
       mediaRecorder.stream.getTracks().forEach((track) => track.stop());
       setIsRecording(false);
       setAudioStream(null);
-      setAudioChunks([]);
+      setAudioBlob(null);
     }
   }, [mediaRecorder]);
 
@@ -85,7 +89,7 @@ export const MicrophoneProvider = ({
         stopRecording,
         error,
         audioStream,
-        audioChunks,
+        audioBlob,
       }}
     >
       {children}
