@@ -43,6 +43,7 @@ export const DeepgramProvider = ({
         model: "nova-3",
         language: "en-US",
         smart_format: true,
+        no_delay: true,
       });
 
       newConnection.on(LiveTranscriptionEvents.Open, () => {

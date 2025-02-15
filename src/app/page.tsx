@@ -8,10 +8,21 @@ import { useEffect } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 
 export default function Home() {
-  const { isRecording, audioBlob, startRecording, stopRecording } =
-    useMicrophone();
-  const { error, transcript, connect, disconnect, sendAudio, connectionState } =
-    useDeepgram();
+  const {
+    error: microphoneError,
+    isRecording,
+    audioBlob,
+    startRecording,
+    stopRecording,
+  } = useMicrophone();
+  const {
+    error: deepgamError,
+    transcript,
+    connect,
+    disconnect,
+    sendAudio,
+    connectionState,
+  } = useDeepgram();
 
   useEffect(() => {
     // Only initialize microphone if not already recording
@@ -49,6 +60,12 @@ export default function Home() {
       connect();
     }
   };
+
+  const error = microphoneError
+    ? microphoneError
+    : deepgamError
+    ? deepgamError
+    : null;
 
   return (
     <div className="page-container relative">
