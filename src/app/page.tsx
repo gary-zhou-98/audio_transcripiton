@@ -8,9 +8,9 @@ import { useEffect } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 
 export default function Home() {
-  const { isRecording, audioChunks, startRecording, stopRecording } =
+  const { isRecording, audioBlob, startRecording, stopRecording } =
     useMicrophone();
-  const { transcript, connect, disconnect, sendAudio, connectionState } =
+  const { error, transcript, connect, disconnect, sendAudio, connectionState } =
     useDeepgram();
 
   useEffect(() => {
@@ -35,14 +35,10 @@ export default function Home() {
   }, []); // Only run on mount and unmount
 
   useEffect(() => {
-    if (
-      audioChunks &&
-      audioChunks.length > 0 &&
-      connectionState === "connected"
-    ) {
-      sendAudio(audioChunks);
+    if (audioBlob && connectionState === "connected") {
+      sendAudio(audioBlob);
     }
-  }, [audioChunks, connectionState, sendAudio]);
+  }, [audioBlob, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
     if (isRecording) {
@@ -58,7 +54,7 @@ export default function Home() {
     <div className="page-container relative">
       <Header />
       <main className="main-content">
-        <TranscriptionBox transcription={transcript} />
+        <TranscriptionBox transcription={error ? error : transcript} />
         <Button
           label={isRecording ? "Stop" : "Start"}
           onButtonClick={handleButtonClick}
