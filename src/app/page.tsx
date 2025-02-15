@@ -8,8 +8,10 @@ import { useEffect } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 
 export default function Home() {
-  const { isRecording, startRecording, stopRecording } = useMicrophone();
-  const { transcript, connect, disconnect } = useDeepgram();
+  const { isRecording, audioChunks, startRecording, stopRecording } =
+    useMicrophone();
+  const { transcript, connect, disconnect, sendAudio, connectionState } =
+    useDeepgram();
 
   useEffect(() => {
     // Only initialize microphone if not already recording
@@ -31,6 +33,16 @@ export default function Home() {
       disconnect();
     };
   }, []); // Only run on mount and unmount
+
+  useEffect(() => {
+    if (
+      audioChunks &&
+      audioChunks.length > 0 &&
+      connectionState === "connected"
+    ) {
+      sendAudio(audioChunks);
+    }
+  }, [audioChunks, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
     if (isRecording) {

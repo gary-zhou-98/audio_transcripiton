@@ -12,6 +12,7 @@ interface DeepgramContextType {
   connect: () => Promise<void>;
   disconnect: () => void;
   error: string | null;
+  sendAudio: (audioChunks: Blob[]) => void;
 }
 
 const DeepgramContext = createContext<DeepgramContextType | undefined>(
@@ -82,6 +83,18 @@ export const DeepgramProvider = ({
     }
   }, [connection]);
 
+  const sendAudio = useCallback(
+    (audioChunks: Blob[]) => {
+      if (connection && connectionState === "connected") {
+        audioChunks.forEach((chunk) => {
+          const response = connection.send(chunk);
+          console.log("response: ", response);
+        });
+      }
+    },
+    [connection, connectionState]
+  );
+
   return (
     <DeepgramContext.Provider
       value={{
@@ -90,6 +103,7 @@ export const DeepgramProvider = ({
         connect,
         disconnect,
         error,
+        sendAudio,
       }}
     >
       {children}

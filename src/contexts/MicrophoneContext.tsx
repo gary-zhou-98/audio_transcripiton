@@ -52,6 +52,7 @@ export const MicrophoneProvider = ({
       recorder.addEventListener("dataavailable", (event) => {
         if (event.data.size > 0) {
           setAudioChunks((prevChunks) => [...prevChunks, event.data]);
+          console.log("audioChunks: ", audioChunks);
         }
       });
 
