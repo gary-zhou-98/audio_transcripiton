@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import type { LiveTranscriptionEvents, LiveClient } from "@deepgram/sdk";
+import { LiveTranscriptionEvents, LiveClient } from "@deepgram/sdk";
 import { config } from "../config/env";
 
 type ConnectionState = "disconnected" | "connecting" | "connected" | "error";
