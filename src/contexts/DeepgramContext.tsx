@@ -1,11 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import {
-  createClient,
-  LiveTranscriptionEvents,
-  LiveClient,
-} from "@deepgram/sdk";
+import type { LiveTranscriptionEvents, LiveClient } from "@deepgram/sdk";
 import { config } from "../config/env";
 
 type ConnectionState = "disconnected" | "connecting" | "connected" | "error";
@@ -34,10 +30,13 @@ export const DeepgramProvider = ({
   const [connection, setConnection] = useState<LiveClient | null>(null);
 
   const connect = useCallback(async () => {
+    console.log("connecting");
     try {
       setConnectionState("connecting");
       setError(null);
 
+      // Dynamically import the SDK only on the client side
+      const { createClient } = await import("@deepgram/sdk");
       const deepgram = createClient(config.deepgramApiKey);
       const newConnection = deepgram.listen.live({
         model: "nova-3",
@@ -74,6 +73,7 @@ export const DeepgramProvider = ({
   }, []);
 
   const disconnect = useCallback(() => {
+    console.log("disconnecting");
     if (connection) {
       connection.requestClose();
       setConnection(null);

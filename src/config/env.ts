@@ -1,5 +1,5 @@
 export const config = {
-  deepgramApiKey: process.env.DEEPGRAM_API_KEY,
+  deepgramApiKey: process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY,
 } as const;
 
 // Validate environment variables
