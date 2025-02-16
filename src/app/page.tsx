@@ -20,6 +20,8 @@ export default function Home() {
     transcript,
     connect,
     disconnect,
+    // pause,
+    // resume,
     sendAudio,
     connection,
     connectionState,
@@ -65,26 +67,23 @@ export default function Home() {
       connect();
     }
 
+    // Cleanup: stop recording when component unmounts
     return () => {
-      console.log("unmounting");
       stopRecording();
       disconnect();
     };
   }, []); // Only run on mount and unmount
 
   useEffect(() => {
-    if (audioBlob) {
+    if (audioBlob && connectionState === "connected") {
       sendAudio(audioBlob);
     }
-  }, [audioBlob, sendAudio]);
+  }, [audioBlob, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
-    console.log("handleButtonClick");
-    if (isRecording) {
-      stopRecording();
+    if (connectionState === "connected") {
       disconnect();
     } else {
-      startRecording();
       connect();
     }
   };

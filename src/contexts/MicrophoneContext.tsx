@@ -82,6 +82,7 @@ export const MicrophoneProvider = ({
       setIsRecording(false);
       setAudioStream(null);
       setAudioBlob(null);
+      mediaRecorderRef.current = null;
     }
   }, [mediaRecorder]);
 

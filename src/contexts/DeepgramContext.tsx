@@ -4,13 +4,20 @@ import React, { createContext, useContext, useState, useCallback } from "react";
 import { LiveTranscriptionEvents, LiveClient } from "@deepgram/sdk";
 import { config } from "../config/env";
 
-type ConnectionState = "disconnected" | "connecting" | "connected" | "error";
+type ConnectionState =
+  | "disconnecting"
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "error";
 
 interface DeepgramContextType {
   connectionState: ConnectionState;
   transcript: string;
   connect: () => Promise<void>;
   disconnect: () => void;
+  // pause: () => void;
+  // resume: () => void;
   error: string | null;
   sendAudio: (audioBlob: Blob) => void;
   connection: LiveClient | null;
@@ -31,17 +38,42 @@ export const DeepgramProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [connection, setConnection] = useState<LiveClient | null>(null);
 
-  const connect = useCallback(async () => {
-    if (connectionState === "connected" || connectionState === "connecting") {
-      console.log("connection already exists");
-      return;
+  const transcriptListener = (data: {
+    channel: { alternatives: { transcript: string }[] };
+  }) => {
+    console.log("transcript", data);
+    const newTranscript = data.channel.alternatives[0].transcript;
+    if (newTranscript) {
+      setTranscript((prev) => prev + " " + newTranscript);
     }
+  };
 
-    setConnectionState("connecting");
-    try {
+  const cleanupConnection = useCallback(() => {
+    console.log("clean up called");
+    if (connection) {
+      console.log("cleaning up connection");
+      // Remove all event listeners
+      connection.removeAllListeners(LiveTranscriptionEvents.Open);
+      connection.removeAllListeners(LiveTranscriptionEvents.Close);
+      connection.removeAllListeners(LiveTranscriptionEvents.Transcript);
+      connection.removeAllListeners(LiveTranscriptionEvents.Error);
+      connection.removeAllListeners(LiveTranscriptionEvents.UtteranceEnd);
+      connection.removeAllListeners(LiveTranscriptionEvents.SpeechStarted);
+      connection.removeAllListeners(LiveTranscriptionEvents.Metadata);
+
+      // Clear states
+      setConnection(null);
       setError(null);
+      setTranscript("");
+      setConnectionState("disconnected");
+    }
+  }, [connection]);
 
-      // Dynamically import the SDK only on the client side
+  const connect = useCallback(async () => {
+    console.log("connecting");
+    try {
+      setConnectionState("connecting");
+      setError(null);
       const { createClient } = await import("@deepgram/sdk");
       const deepgram = createClient(config.deepgramApiKey);
       const newConnection = await deepgram.listen.live({
@@ -52,6 +84,9 @@ export const DeepgramProvider = ({
       });
 
       console.log("newConnection", newConnection);
+
+      // Set connection first so event listeners have access to it
+      setConnection(newConnection);
 
       newConnection.on(LiveTranscriptionEvents.Open, () => {
         setConnectionState("connected");
@@ -73,39 +108,26 @@ export const DeepgramProvider = ({
       });
 
       newConnection.on(LiveTranscriptionEvents.Error, (err) => {
-        console.log("error", err);
         setError(err.message);
         setConnectionState("error");
       });
 
-      newConnection.on(LiveTranscriptionEvents.UtteranceEnd, (utteranceEnd) => {
-        console.log("UtteranceEnd", utteranceEnd);
-      });
-
-      newConnection.on(
-        LiveTranscriptionEvents.SpeechStarted,
-        (speechStarted) => {
-          console.log("SpeechStarted", speechStarted);
-        }
-      );
       setConnection(newConnection);
     } catch (err) {
       setError((err as Error).message);
       setConnectionState("error");
     }
-  }, [connectionState]);
+  }, []);
 
   const disconnect = useCallback(() => {
-    console.log("disconnect triggered");
+    console.log("disconnecting");
     if (connection) {
-      console.log("disconnecting");
       connection.requestClose();
       setConnection(null);
       setConnectionState("disconnected");
       setError(null);
-      setTranscript("");
     }
-  }, []);
+  }, [connection]);
 
   const sendAudio = useCallback(
     (audioBlob: Blob) => {
@@ -123,6 +145,8 @@ export const DeepgramProvider = ({
         transcript,
         connect,
         disconnect,
+        // pause,
+        // resume,
         error,
         sendAudio,
         connection,
