@@ -83,8 +83,6 @@ export const DeepgramProvider = ({
         no_delay: true,
       });
 
-      console.log("newConnection", newConnection);
-
       // Set connection first so event listeners have access to it
       setConnection(newConnection);
 
@@ -100,12 +98,7 @@ export const DeepgramProvider = ({
         setTranscript("");
       });
 
-      newConnection.on(LiveTranscriptionEvents.Transcript, (data) => {
-        const newTranscript = data.channel.alternatives[0].transcript;
-        if (newTranscript) {
-          setTranscript((prev) => prev + " " + newTranscript);
-        }
-      });
+      newConnection.on(LiveTranscriptionEvents.Transcript, transcriptListener);
 
       newConnection.on(LiveTranscriptionEvents.Error, (err) => {
         setError(err.message);
@@ -123,11 +116,9 @@ export const DeepgramProvider = ({
     console.log("disconnecting");
     if (connection) {
       connection.requestClose();
-      setConnection(null);
-      setConnectionState("disconnected");
-      setError(null);
+      cleanupConnection();
     }
-  }, [connection]);
+  }, [connection, cleanupConnection]);
 
   const sendAudio = useCallback(
     (audioBlob: Blob) => {

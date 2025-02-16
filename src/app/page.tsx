@@ -59,9 +59,6 @@ export default function Home() {
 
   // Initial setup effect
   useEffect(() => {
-    console.log("initial setup triggered");
-    console.log("connectionState: ", connectionState);
-
     if (!isRecording && !(connectionState === "connected")) {
       startRecording();
       connect();
@@ -81,10 +78,10 @@ export default function Home() {
   }, [audioBlob, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
-    if (connectionState === "connected") {
-      disconnect();
+    if (isRecording) {
+      stopRecording();
     } else {
-      connect();
+      startRecording();
     }
   };
 
@@ -100,7 +97,7 @@ export default function Home() {
       <main className="main-content">
         <TranscriptionBox transcription={error ? error : transcript} />
         <Button
-          label={connectionState === "connected" ? "Stop" : "Start"}
+          label={isRecording ? "Stop" : "Start"}
           onButtonClick={handleButtonClick}
         />
       </main>
