@@ -4,7 +4,7 @@ import Header from "@/components/Header/Header";
 import TranscriptionBox from "@/components/TranscriptionBox/TranscriptionBox";
 import Button from "@/components/Button/Button";
 import { useMicrophone } from "@/contexts/MicrophoneContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 
 export default function Home() {
@@ -21,37 +21,65 @@ export default function Home() {
     connect,
     disconnect,
     sendAudio,
+    connection,
     connectionState,
   } = useDeepgram();
 
+  // Add refs for keeping track of intervals
+  const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add effect to handle connection state changes
   useEffect(() => {
-    // Only initialize microphone if not already recording
-    if (!isRecording) {
-      const initializeMicrophone = async () => {
+    if (keepAliveIntervalRef.current) {
+      clearInterval(keepAliveIntervalRef.current);
+    }
+
+    // Only set up interval if we have a connection
+    if (connection) {
+      keepAliveIntervalRef.current = setInterval(() => {
         try {
-          await startRecording();
+          connection.keepAlive();
+          console.log("Sent keepalive message");
         } catch (err) {
-          console.error("Failed to initialize microphone:", err);
+          console.warn("Failed to send keepalive:", err);
+        }
+      }, 3000);
+
+      // Cleanup function
+      return () => {
+        if (keepAliveIntervalRef.current) {
+          clearInterval(keepAliveIntervalRef.current);
+          keepAliveIntervalRef.current = null;
         }
       };
-      initializeMicrophone();
+    }
+  }, [connection]);
+
+  // Initial setup effect
+  useEffect(() => {
+    console.log("initial setup triggered");
+    console.log("connectionState: ", connectionState);
+
+    if (!isRecording && !(connectionState === "connected")) {
+      startRecording();
       connect();
     }
 
-    // Cleanup: stop recording when component unmounts
     return () => {
+      console.log("unmounting");
       stopRecording();
       disconnect();
     };
   }, []); // Only run on mount and unmount
 
   useEffect(() => {
-    if (audioBlob && connectionState === "connected") {
+    if (audioBlob) {
       sendAudio(audioBlob);
     }
-  }, [audioBlob, connectionState, sendAudio]);
+  }, [audioBlob, sendAudio]);
 
   const handleButtonClick = () => {
+    console.log("handleButtonClick");
     if (isRecording) {
       stopRecording();
       disconnect();
@@ -73,7 +101,7 @@ export default function Home() {
       <main className="main-content">
         <TranscriptionBox transcription={error ? error : transcript} />
         <Button
-          label={isRecording ? "Stop" : "Start"}
+          label={connectionState === "connected" ? "Stop" : "Start"}
           onButtonClick={handleButtonClick}
         />
       </main>

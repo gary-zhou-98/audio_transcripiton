@@ -44,6 +44,10 @@ export const MicrophoneProvider = ({
   }, [audioStream]);
 
   const startRecording = useCallback(async () => {
+    if (mediaRecorderRef.current) {
+      console.log("already recording");
+      return;
+    }
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("user media is not supported");
