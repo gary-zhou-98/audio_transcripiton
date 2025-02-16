@@ -70,7 +70,11 @@ export const DeepgramProvider = ({
   }, [connection]);
 
   const connect = useCallback(async () => {
-    console.log("connecting");
+    if (connectionState === "connected" || connectionState === "connecting") {
+      console.log("connection already exists");
+      return;
+    }
+
     try {
       setConnectionState("connecting");
       setError(null);
@@ -110,11 +114,12 @@ export const DeepgramProvider = ({
       setError((err as Error).message);
       setConnectionState("error");
     }
-  }, []);
+  }, [connectionState]);
 
   const disconnect = useCallback(() => {
-    console.log("disconnecting");
+    console.log("disconnect triggered");
     if (connection) {
+      console.log("disconnecting");
       connection.requestClose();
       cleanupConnection();
     }
