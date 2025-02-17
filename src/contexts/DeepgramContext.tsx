@@ -60,7 +60,7 @@ export const DeepgramProvider = ({
 
   const connect = useCallback(async () => {
     if (connectionState === "connected" || connectionState === "connecting") {
-      console.log("connection already exists");
+      console.log("Connection already exists");
       return;
     }
 
