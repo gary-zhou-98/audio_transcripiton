@@ -30,13 +30,6 @@ export default function Home() {
   // Add refs for keeping track of intervals
   const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (audioBlob && connectionState === "connected") {
-      // Send the Opus data directly to Deepgram
-      sendAudio(audioBlob);
-    }
-  }, [audioBlob, connectionState, sendAudio]);
-
   // Add effect to handle connection state changes
   useEffect(() => {
     if (keepAliveIntervalRef.current) {
@@ -77,6 +70,12 @@ export default function Home() {
       disconnect();
     };
   }, []); // Only run on mount and unmount
+
+  useEffect(() => {
+    if (audioBlob && connectionState === "connected") {
+      sendAudio(audioBlob);
+    }
+  }, [audioBlob, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
     if (connectionState === "connected") {

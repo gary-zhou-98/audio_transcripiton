@@ -19,7 +19,7 @@ interface DeepgramContextType {
   // pause: () => void;
   // resume: () => void;
   error: string | null;
-  sendAudio: (audioBlob: ArrayBuffer) => void;
+  sendAudio: (audioBlob: Blob) => void;
   connection: LiveClient | null;
 }
 
@@ -60,7 +60,7 @@ export const DeepgramProvider = ({
 
   const connect = useCallback(async () => {
     if (connectionState === "connected" || connectionState === "connecting") {
-      console.log("Connection already exists");
+      console.log("connection already exists");
       return;
     }
 
@@ -72,8 +72,6 @@ export const DeepgramProvider = ({
       const newConnection = await deepgram.listen.live({
         model: "nova-3",
         language: "en-US",
-        encoding: "linear16",
-        sample_rate: 48000,
         channels: 1,
         smart_format: true,
       });
@@ -125,7 +123,7 @@ export const DeepgramProvider = ({
   }, [connectionState, cleanupConnection]);
 
   const sendAudio = useCallback(
-    (audioBlob: ArrayBuffer) => {
+    (audioBlob: Blob) => {
       try {
         if (connection && connectionState === "connected") {
           connection.send(audioBlob);

@@ -15,36 +15,11 @@ interface MicrophoneContextType {
   stopRecording: () => Promise<void>;
   error: string | null;
   audioStream: MediaStream | null;
-  audioBlob: ArrayBuffer | null;
+  audioBlob: Blob | null;
 }
 
 const MicrophoneContext = createContext<MicrophoneContextType | undefined>(
   undefined
-);
-
-// Define the worklet processor code as a string
-const workletCode = `
-class AudioProcessor extends AudioWorkletProcessor {
-  process(inputs, outputs, parameters) {
-    const input = inputs[0];
-    if (input.length > 0) {
-      const inputChannel = input[0];
-      // Convert Float32Array to Int16Array
-      const int16Data = new Int16Array(inputChannel.length);
-      for (let i = 0; i < inputChannel.length; i++) {
-        int16Data[i] = Math.max(-1, Math.min(1, inputChannel[i])) * 0x7fff;
-      }
-      this.port.postMessage(int16Data.buffer, [int16Data.buffer]);
-    }
-    return true;
-  }
-}
-registerProcessor('audio-processor', AudioProcessor);
-`;
-
-// Create a Blob URL for the worklet code
-const workletBlobURL = URL.createObjectURL(
-  new Blob([workletCode], { type: "text/javascript" })
 );
 
 export const MicrophoneProvider = ({
@@ -58,44 +33,39 @@ export const MicrophoneProvider = ({
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  const [audioBlob, setAudioBlob] = useState<ArrayBuffer | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  useEffect(() => {
+    return () => {
+      if (audioStream) {
+        audioStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [audioStream]);
 
   const startRecording = useCallback(async () => {
+    if (mediaRecorderRef.current) {
+      console.log("already recording");
+      return;
+    }
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("user media is not supported");
       }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 48000,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
+      recorder.addEventListener("dataavailable", (event) => {
+        if (event.data) {
+          setAudioBlob(event.data);
+        } else {
+          console.log("Skipping empty or invalid audio chunk");
+        }
       });
 
-      // Create and initialize AudioContext with worklet
-      const audioContext = new AudioContext({ sampleRate: 48000 });
-      await audioContext.audioWorklet.addModule(workletBlobURL);
-
-      const source = audioContext.createMediaStreamSource(stream);
-      const workletNode = new AudioWorkletNode(audioContext, "audio-processor");
-
-      // Handle audio data from the worklet
-      workletNode.port.onmessage = (event) => {
-        setAudioBlob(event.data);
-      };
-
-      source.connect(workletNode);
-      workletNode.connect(audioContext.destination);
-
-      // Store refs for cleanup
-      audioContextRef.current = audioContext;
-      workletNodeRef.current = workletNode;
-
+      recorder.start(100);
+      setMediaRecorder(recorder);
       setAudioStream(stream);
       setIsRecording(true);
       setError(null);
@@ -106,28 +76,15 @@ export const MicrophoneProvider = ({
   }, []);
 
   const stopRecording = useCallback(async () => {
-    if (audioStream) {
-      audioStream.getTracks().forEach((track) => track.stop());
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+      setIsRecording(false);
+      setAudioStream(null);
+      setAudioBlob(null);
+      mediaRecorderRef.current = null;
     }
-    if (audioContextRef.current) {
-      await audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    if (workletNodeRef.current) {
-      workletNodeRef.current.disconnect();
-      workletNodeRef.current = null;
-    }
-    setIsRecording(false);
-    setAudioStream(null);
-    setAudioBlob(null);
-  }, [audioStream]);
-
-  useEffect(() => {
-    return () => {
-      stopRecording();
-      URL.revokeObjectURL(workletBlobURL);
-    };
-  }, [stopRecording]);
+  }, [mediaRecorder]);
 
   return (
     <MicrophoneContext.Provider
