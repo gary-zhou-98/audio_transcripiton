@@ -35,6 +35,18 @@ export const MicrophoneProvider = ({
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+  const onDataAvailable = useCallback(
+    (event) => {
+      if (event.data) {
+        setAudioBlob(event.data);
+      } else {
+        console.log("Skipping empty or invalid audio chunk");
+      }
+    },
+    [setAudioBlob]
+  );
+
   useEffect(() => {
     return () => {
       if (audioStream) {
@@ -56,13 +68,7 @@ export const MicrophoneProvider = ({
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
 
-      recorder.addEventListener("dataavailable", (event) => {
-        if (event.data) {
-          setAudioBlob(event.data);
-        } else {
-          console.log("Skipping empty or invalid audio chunk");
-        }
-      });
+      recorder.addEventListener("dataavailable", onDataAvailable);
 
       recorder.start(100);
       setMediaRecorder(recorder);
@@ -79,12 +85,13 @@ export const MicrophoneProvider = ({
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+      mediaRecorder.removeEventListener("dataavailable", onDataAvailable);
       setIsRecording(false);
       setAudioStream(null);
       setAudioBlob(null);
       mediaRecorderRef.current = null;
     }
-  }, [mediaRecorder]);
+  }, [mediaRecorder, onDataAvailable]);
 
   return (
     <MicrophoneContext.Provider

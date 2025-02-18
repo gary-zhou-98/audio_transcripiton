@@ -20,8 +20,8 @@ export default function Home() {
     transcript,
     connect,
     disconnect,
-    // pause,
-    // resume,
+    pauseTranscription,
+    resumeTranscription,
     sendAudio,
     connection,
     connectionState,
@@ -78,15 +78,12 @@ export default function Home() {
   }, [audioBlob, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
-    if (connectionState === "connected") {
-      try {
-        connection?.requestClose();
-        disconnect();
-      } catch (err) {
-        console.error("Error closing connection:", err);
-      }
+    if (connectionState === "connected" || connectionState === "resumed") {
+      disconnect();
+      stopRecording();
     } else {
       connect();
+      startRecording();
     }
   };
 
@@ -102,7 +99,11 @@ export default function Home() {
       <main className="main-content">
         <TranscriptionBox transcription={error ? error : transcript} />
         <Button
-          label={connectionState === "connected" ? "Stop" : "Start"}
+          label={
+            connectionState === "connected" || connectionState === "resumed"
+              ? "Stop"
+              : "Start"
+          }
           onButtonClick={handleButtonClick}
         />
       </main>
