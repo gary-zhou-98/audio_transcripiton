@@ -72,7 +72,7 @@ export default function Home() {
 
   useEffect(() => {
     if (audioBlob && connectionState === "connected") {
-      sendAudio(audioBlob);
+      sendAudio(audioBlob[audioBlob.length - 1]);
     }
   }, [audioBlob, connectionState, sendAudio]);
 
@@ -96,9 +96,7 @@ export default function Home() {
     <div className="page-container relative">
       <Header />
       <main className="main-content">
-        <AudioDownloader
-          downloadUrl={audioBlob ? URL.createObjectURL(audioBlob) : ""}
-        />
+        <AudioDownloader />
         <TranscriptionBox transcription={error ? error : transcript} />
         <Button
           label={

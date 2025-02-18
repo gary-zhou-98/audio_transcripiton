@@ -15,7 +15,7 @@ interface MicrophoneContextType {
   stopRecording: () => Promise<void>;
   error: string | null;
   audioStream: MediaStream | null;
-  audioBlob: Blob | null;
+  audioBlob: Blob[] | null;
 }
 
 const MicrophoneContext = createContext<MicrophoneContextType | undefined>(
@@ -33,13 +33,13 @@ export const MicrophoneProvider = ({
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob[] | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const onDataAvailable = useCallback(
     (event: BlobEvent) => {
       if (event.data) {
-        setAudioBlob(event.data);
+        setAudioBlob((prev) => (prev ? [...prev, event.data] : [event.data]));
       } else {
         console.log("Skipping empty or invalid audio chunk");
       }

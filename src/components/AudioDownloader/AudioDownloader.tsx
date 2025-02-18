@@ -1,13 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./AudioDownloader.css";
+import { useMicrophone } from "@/contexts/MicrophoneContext";
 
-interface AudioDownloaderProps {
-  downloadUrl: string;
-}
+const AudioDownloader = () => {
+  const { isRecording, audioBlob } = useMicrophone();
+  const [downloadUrl, setDownloadUrl] = useState("");
 
-const AudioDownloader = ({ downloadUrl }: AudioDownloaderProps) => {
+  useEffect(() => {
+    if (audioBlob) {
+      setDownloadUrl(
+        URL.createObjectURL(new Blob(audioBlob, { type: "audio/webm" }))
+      );
+    }
+  }, [audioBlob]);
+
+  if (isRecording) {
+    return null;
+  }
   return (
     <div className="audio-downloader">
       <a href={downloadUrl} download="recording.webm">
