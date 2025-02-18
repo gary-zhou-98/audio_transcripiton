@@ -10,8 +10,6 @@
   },
   "dependencies": {
     "@deepgram/sdk": "^3.11.1",
-    "@ffmpeg/ffmpeg": "^0.12.15",
-    "@ffmpeg/util": "^0.12.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
