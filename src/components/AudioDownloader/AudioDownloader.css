@@ -1,0 +1,63 @@
+.audio-downloader {
+  margin-top: 1rem;
+  text-align: center;
+  font-family: "Geist Sans", sans-serif;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.audio-downloader a {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #141515;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  font-weight: bold;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.audio-downloader a:hover {
+  background-color: #0560ba;
+}
+
+.audio-downloader audio {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 5px;
+  outline: none;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+.audio-downloader input {
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: white;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  font-family: "Geist Sans", sans-serif;
+  transition: border-color 0.3s ease;
+}
+
+.audio-downloader input:focus {
+  border-color: #0070f3;
+  outline: none;
+}
+
+.audio-downloader audio::-webkit-media-controls-panel {
+  background-color: #333;
+  border-radius: 5px;
+}
+
+.audio-downloader audio::-webkit-media-controls-current-time-display,
+.audio-downloader audio::-webkit-media-controls-time-remaining-display {
+  color: #ffffff;
+}

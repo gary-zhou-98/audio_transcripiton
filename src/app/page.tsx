@@ -6,6 +6,7 @@ import Button from "@/components/Button/Button";
 import { useMicrophone } from "@/contexts/MicrophoneContext";
 import { useEffect, useRef } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
+import AudioDownloader from "@/components/AudioDownloader/AudioDownloader";
 
 export default function Home() {
   const {
@@ -20,8 +21,6 @@ export default function Home() {
     transcript,
     connect,
     disconnect,
-    pauseTranscription,
-    resumeTranscription,
     sendAudio,
     connection,
     connectionState,
@@ -73,12 +72,12 @@ export default function Home() {
 
   useEffect(() => {
     if (audioBlob && connectionState === "connected") {
-      sendAudio(audioBlob);
+      sendAudio(audioBlob[audioBlob.length - 1]);
     }
   }, [audioBlob, connectionState, sendAudio]);
 
   const handleButtonClick = () => {
-    if (connectionState === "connected" || connectionState === "resumed") {
+    if (connectionState === "connected" && isRecording) {
       disconnect();
       stopRecording();
     } else {
@@ -97,12 +96,11 @@ export default function Home() {
     <div className="page-container relative">
       <Header />
       <main className="main-content">
+        <AudioDownloader />
         <TranscriptionBox transcription={error ? error : transcript} />
         <Button
           label={
-            connectionState === "connected" || connectionState === "resumed"
-              ? "Stop"
-              : "Start"
+            connectionState === "connected" && isRecording ? "Stop" : "Start"
           }
           onButtonClick={handleButtonClick}
         />
