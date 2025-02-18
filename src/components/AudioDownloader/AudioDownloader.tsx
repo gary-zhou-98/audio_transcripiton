@@ -7,7 +7,7 @@ import { useMicrophone } from "@/contexts/MicrophoneContext";
 const AudioDownloader = () => {
   const { isRecording, audioBlob } = useMicrophone();
   const [downloadUrl, setDownloadUrl] = useState("");
-  const [fileName, setFileName] = useState("recording.webm");
+  const [fileName, setFileName] = useState("");
 
   useEffect(() => {
     if (audioBlob) {
@@ -27,6 +27,7 @@ const AudioDownloader = () => {
         type="text"
         value={fileName}
         onChange={(e) => setFileName(e.target.value)}
+        placeholder="[Optional] File name"
       />
       <a href={downloadUrl} download={fileName}>
         Download Recording
