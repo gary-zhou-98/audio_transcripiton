@@ -37,7 +37,7 @@ export const MicrophoneProvider = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const onDataAvailable = useCallback(
-    (event) => {
+    (event: BlobEvent) => {
       if (event.data) {
         setAudioBlob(event.data);
       } else {

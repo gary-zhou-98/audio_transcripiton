@@ -9,17 +9,34 @@ type ConnectionState =
   | "disconnected"
   | "connecting"
   | "connected"
-  | "paused"
-  | "resumed"
   | "error";
+
+interface Word {
+  word: string;
+  start: number;
+  end: number;
+  confidence: number;
+}
+
+interface Alternative {
+  transcript: string;
+  confidence: number;
+  words: Word[];
+}
+
+interface Channel {
+  alternatives: Alternative[];
+}
+
+interface DeepgramResponse {
+  channel: Channel;
+}
 
 interface DeepgramContextType {
   connectionState: ConnectionState;
   transcript: string;
   connect: () => Promise<void>;
   disconnect: () => void;
-  resumeTranscription: () => void;
-  pauseTranscription: () => void;
   error: string | null;
   sendAudio: (audioBlob: Blob) => void;
   connection: LiveClient | null;
@@ -40,7 +57,7 @@ export const DeepgramProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [connection, setConnection] = useState<LiveClient | null>(null);
 
-  const handleTranscript = (data: any) => {
+  const handleTranscript = (data: DeepgramResponse) => {
     console.log("transcript", data);
     const newTranscript = data.channel.alternatives[0].transcript;
     if (newTranscript) {
@@ -57,29 +74,6 @@ export const DeepgramProvider = ({
       setError(null);
       setTranscript("");
       setConnectionState("disconnected");
-    }
-  }, [connection]);
-
-  const resumeTranscription = useCallback(() => {
-    if (connection) {
-      console.log("Resuming transcription");
-      setConnectionState("resumed");
-      connection.addListener(
-        LiveTranscriptionEvents.Transcript,
-        handleTranscript
-      );
-    }
-  }, [connection]);
-
-  const pauseTranscription = useCallback(() => {
-    if (connection) {
-      console.log("Pausing transcription");
-      setConnectionState("paused");
-      setTranscript("");
-      connection.removeListener(
-        LiveTranscriptionEvents.Transcript,
-        handleTranscript
-      );
     }
   }, [connection]);
 
@@ -166,8 +160,6 @@ export const DeepgramProvider = ({
         transcript,
         connect,
         disconnect,
-        pauseTranscription,
-        resumeTranscription,
         error,
         sendAudio,
         connection,
