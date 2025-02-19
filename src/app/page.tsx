@@ -7,7 +7,7 @@ import { useMicrophone } from "@/contexts/MicrophoneContext";
 import { useEffect, useRef } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 import AudioDownloader from "@/components/AudioDownloader/AudioDownloader";
-import Prompt from "@/components/Prompt/Prompt";
+import PromptText from "@/components/Prompt/Prompt";
 
 export default function Home() {
   const {
@@ -98,7 +98,7 @@ export default function Home() {
       <Header />
       <main className="main-content">
         <AudioDownloader />
-        <Prompt />
+        <PromptText />
         <TranscriptionBox transcription={error ? error : transcript} />
         <Button
           label={

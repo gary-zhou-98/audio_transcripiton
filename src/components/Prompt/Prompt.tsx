@@ -2,21 +2,9 @@
 
 import React, { useState } from "react";
 import "./Prompt.css";
+import promptStore, { Prompt } from "@/Store/promptStore";
 
-interface Prompt {
-  title: string;
-  text: string;
-}
-
-const prompts: Prompt[] = [
-  {
-    title: "Prompt 1",
-    text: "This is the full text of Prompt 1-1. This is the full text of Prompt 1.This is the full text of Prompt 1.This is the full text of Prompt 1.This is the full text of Prompt 1.This is the full text of Prompt 1.",
-  },
-  { title: "Prompt 2", text: "This is the full text of Prompt 2." },
-  { title: "Prompt 3", text: "This is the full text of Prompt 3." },
-  // Add more prompts as needed
-];
+const prompts = promptStore;
 
 const Prompt = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
