@@ -4,7 +4,7 @@
 
 @layer components {
   .prompt-container {
-    @apply m-4 font-medium flex flex-col justify-start items-center;
+    @apply max-w-4xl w-full m-4 font-medium flex flex-col justify-start items-center;
   }
 
   .selector-container {
@@ -25,7 +25,7 @@
   }
 
   .prompt-text {
-    @apply w-full max-w-2xl m-2 p-4 bg-gray-800 text-white rounded;
+    @apply w-full m-2 p-4 bg-gray-800 text-white rounded;
   }
 
   .prompt-title {

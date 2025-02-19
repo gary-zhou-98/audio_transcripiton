@@ -2,7 +2,7 @@
 
 @layer components {
   .transcription-box {
-    @apply w-full max-w-2xl rounded-lg bg-gray-900 shadow-lg mx-auto mt-16;
+    @apply max-w-4xl w-full flex flex-col justify-start items-center rounded-lg bg-gray-900 shadow-lg mx-4 mb-1;
   }
 
   .transcription-content {
