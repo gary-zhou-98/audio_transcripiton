@@ -6,6 +6,23 @@
   }
 
   .transcription-content {
-    @apply p-4 text-gray-100 min-h-[100px] text-base;
+    @apply p-4 text-gray-100 text-base w-full;
+    height: 100px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 #1f2937;
+  }
+
+  /* Webkit scrollbar styling */
+  .transcription-content::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .transcription-content::-webkit-scrollbar-track {
+    @apply bg-gray-800;
+  }
+
+  .transcription-content::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
   }
 }
