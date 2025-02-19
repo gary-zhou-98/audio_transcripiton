@@ -58,7 +58,6 @@ export const DeepgramProvider = ({
   const [connection, setConnection] = useState<LiveClient | null>(null);
 
   const handleTranscript = (data: DeepgramResponse) => {
-    console.log("transcript", data);
     const newTranscript = data.channel.alternatives[0].transcript;
     if (newTranscript) {
       setTranscript((prev) => prev + " " + newTranscript);
@@ -93,6 +92,7 @@ export const DeepgramProvider = ({
         language: "en-US",
         channels: 1,
         smart_format: true,
+        endpointing: 100,
       });
 
       // Set up event listeners before setting the connection

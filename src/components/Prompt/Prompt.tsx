@@ -14,6 +14,9 @@ const PromptText = () => {
     const prompt = promptStore.find((p: Prompt) => p.title === selectedTitle);
     if (prompt) {
       selectPrompt(prompt);
+    } else {
+      // If user selects default option "Choose a Prompt"
+      selectPrompt({ title: "", text: "" });
     }
   };
 

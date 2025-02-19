@@ -7,17 +7,23 @@ import { useMicrophone } from "@/contexts/MicrophoneContext";
 const AudioDownloader = () => {
   const { isRecording, audioBlob } = useMicrophone();
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [didDownload, setDidDownload] = useState(false);
   const [fileName, setFileName] = useState("");
 
   useEffect(() => {
     if (audioBlob) {
       setDownloadUrl(
-        URL.createObjectURL(
-          new Blob(audioBlob, { type: "audio/webm;codecs=opus" })
-        )
+        URL.createObjectURL(new Blob(audioBlob, { type: "audio/webm" }))
       );
     }
   }, [audioBlob]);
+
+  useEffect(() => {
+    if (didDownload) {
+      setFileName("");
+      setDidDownload(false);
+    }
+  }, [didDownload]);
 
   if (isRecording) {
     return null;
@@ -31,7 +37,11 @@ const AudioDownloader = () => {
         onChange={(e) => setFileName(e.target.value)}
         placeholder="[Optional] File name"
       />
-      <a href={downloadUrl} download={fileName} onClick={() => setFileName("")}>
+      <a
+        href={downloadUrl}
+        download={fileName}
+        onClick={() => setDidDownload(true)}
+      >
         Download Recording
       </a>
       <br />
