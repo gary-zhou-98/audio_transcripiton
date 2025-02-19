@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import "./Prompt.css";
 import promptStore, { Prompt } from "@/Store/promptStore";
+import ReactMarkdown from "react-markdown";
 
 const prompts = promptStore;
 
-const Prompt = () => {
+const PromptText = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -37,11 +38,13 @@ const Prompt = () => {
       {selectedPrompt && (
         <div className="prompt-text">
           <h3 className="prompt-title">{selectedPrompt.title}</h3>
-          <p className="prompt-description">{selectedPrompt.text}</p>
+          <ReactMarkdown className="prompt-description">
+            {selectedPrompt.text}
+          </ReactMarkdown>
         </div>
       )}
     </div>
   );
 };
 
-export default Prompt;
+export default PromptText;
