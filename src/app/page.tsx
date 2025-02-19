@@ -4,7 +4,7 @@ import Header from "@/components/Header/Header";
 import TranscriptionBox from "@/components/TranscriptionBox/TranscriptionBox";
 import Button from "@/components/Button/Button";
 import { useMicrophone } from "@/contexts/MicrophoneContext";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 import AudioDownloader from "@/components/AudioDownloader/AudioDownloader";
 import PromptText from "@/components/Prompt/Prompt";
@@ -31,15 +31,15 @@ export default function Home() {
   // Add refs for keeping track of intervals
   const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startTranscription = () => {
+  const startTranscription = useCallback(() => {
     startRecording();
     connect();
-  };
+  }, [startRecording, connect]);
 
-  const stopTranscription = () => {
+  const stopTranscription = useCallback(() => {
     disconnect();
     stopRecording();
-  };
+  }, [disconnect, stopRecording]);
 
   // Add effect to handle connection state changes
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function Home() {
 
   useEffect(() => {
     if (transcript) {
-      const isPromptMatch = comparePromptWithTranscription(transcript);
+      const isPromptMatch = comparePromptWithTranscription(transcript, false);
       if (!isPromptMatch) {
         alert("You are not following the prompt");
         stopTranscription();
@@ -99,6 +99,10 @@ export default function Home() {
   const handleButtonClick = () => {
     if (connectionState === "connected" && isRecording) {
       stopTranscription();
+      const isPromptMatch = comparePromptWithTranscription(transcript, true);
+      if (!isPromptMatch) {
+        alert("You did not record the full prompt");
+      }
     } else {
       startTranscription();
     }
