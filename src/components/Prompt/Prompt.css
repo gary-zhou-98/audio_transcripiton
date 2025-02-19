@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .prompt-container {
+    @apply max-w-4xl w-full m-4 font-medium flex flex-col justify-start items-center;
+  }
+
+  .selector-container {
+    @apply m-2 font-medium flex flex-row justify-center items-start;
+  }
+
+  .prompt-label {
+    @apply block text-white ml-1 mr-1;
+  }
+
+  .prompt-select {
+    @apply p-2 ml-1 mr-1 border border-gray-700 bg-gray-900 text-white rounded-md appearance-none;
+  }
+
+  /* Style the options within the select */
+  .prompt-select option {
+    @apply bg-gray-900 text-white text-center;
+  }
+
+  .prompt-text {
+    @apply w-full m-2 p-4 bg-gray-800 text-white rounded;
+  }
+
+  .prompt-title {
+    @apply text-lg font-bold;
+  }
+
+  .prompt-description {
+    @apply mt-2;
+  }
+}

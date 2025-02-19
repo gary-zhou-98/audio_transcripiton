@@ -12,7 +12,9 @@ const AudioDownloader = () => {
   useEffect(() => {
     if (audioBlob) {
       setDownloadUrl(
-        URL.createObjectURL(new Blob(audioBlob, { type: "audio/webm" }))
+        URL.createObjectURL(
+          new Blob(audioBlob, { type: "audio/webm;codecs=opus" })
+        )
       );
     }
   }, [audioBlob]);
@@ -29,7 +31,7 @@ const AudioDownloader = () => {
         onChange={(e) => setFileName(e.target.value)}
         placeholder="[Optional] File name"
       />
-      <a href={downloadUrl} download={fileName}>
+      <a href={downloadUrl} download={fileName} onClick={() => setFileName("")}>
         Download Recording
       </a>
       <br />

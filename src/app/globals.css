@@ -8,7 +8,7 @@
   }
 
   .main-content {
-    @apply max-w-7xl mx-auto px-4 py-8 text-gray-100 min-h-[calc(100vh-64px)] flex flex-col items-center justify-center;
+    @apply max-w-full mx-auto px-2 py-8 text-gray-100 min-h-[calc(100vh-64px)] flex flex-col items-center justify-start;
   }
 }
 
