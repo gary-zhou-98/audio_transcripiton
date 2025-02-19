@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import "./Prompt.css";
-import promptStore, { Prompt } from "@/Store/promptStore";
 import ReactMarkdown from "react-markdown";
-
-const prompts = promptStore;
+import { Prompt } from "@/Store/promptStore";
+import { usePrompt } from "@/contexts/PromptContext";
 
 const PromptText = () => {
-  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const { promptStore, selectedPrompt, selectPrompt } = usePrompt();
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTitle = event.target.value;
-    const prompt = prompts.find((p) => p.title === selectedTitle);
-    setSelectedPrompt(prompt || null);
+    const prompt = promptStore.find((p: Prompt) => p.title === selectedTitle);
+    if (prompt) {
+      selectPrompt(prompt);
+    }
   };
 
   return (
@@ -28,14 +29,15 @@ const PromptText = () => {
           className="prompt-select"
         >
           <option value="">--Choose a Prompt--</option>
-          {prompts.map((prompt) => (
+          {promptStore.map((prompt) => (
             <option key={prompt.title} value={prompt.title}>
               {prompt.title}
             </option>
           ))}
         </select>
       </div>
-      {selectedPrompt && (
+
+      {selectedPrompt && selectedPrompt.title !== "" && (
         <div className="prompt-text">
           <h3 className="prompt-title">{selectedPrompt.title}</h3>
           <ReactMarkdown className="prompt-description">
