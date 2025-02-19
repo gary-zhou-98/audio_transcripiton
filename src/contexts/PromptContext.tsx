@@ -13,6 +13,7 @@ interface PromptContextType {
 const PromptContext = createContext<PromptContextType | undefined>(undefined);
 
 export const PromptProvider = ({ children }: { children: React.ReactNode }) => {
+  const [lastWordIndex, setLastWordIndex] = useState<number>(0);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt>({
     title: "",
     text: "",
@@ -24,21 +25,47 @@ export const PromptProvider = ({ children }: { children: React.ReactNode }) => {
 
   const comparePromptWithTranscription = (transcription: string) => {
     const promptText = selectedPrompt.text;
-    const transcriptionText = transcription;
-    const promptTextArray = promptText.split("\n");
-    const transcriptionTextArray = transcriptionText.split("\n");
-    const promptTextArrayLength = promptTextArray.length;
-    const transcriptionTextArrayLength = transcriptionTextArray.length;
-    if (promptTextArrayLength !== transcriptionTextArrayLength) {
-      return false;
+    if (!selectedPrompt || promptText === "") {
+      return true;
     }
-    const currentWordIndex = promptTextArray.length - 1;
-    if (
-      promptTextArray[currentWordIndex] !==
-      transcriptionTextArray[currentWordIndex]
-    ) {
-      return false;
+
+    // Extract all words within quotation marks from the prompt text
+    const quotedWordsRegex = /"([^"]*)"/g;
+    const matches = [...selectedPrompt.text.matchAll(quotedWordsRegex)];
+    const expectedWordsArray = matches.map((match) => {
+      // Remove all punctuation and convert to lowercase
+      return match[1]
+        .toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\"\'\']/g, "");
+    });
+    // Join the expected words array into a string and split it into an array of words
+    const expectedWords = expectedWordsArray.join(" ").split(" ");
+
+    if (expectedWords.length === 0) {
+      return true;
     }
+
+    // Remove punctuation from transcription and convert to lowercase
+    let transcriptionLower = transcription.split(" ").map((word) => {
+      return word
+        .toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\"\"\'\']/g, "");
+    });
+    transcriptionLower = transcriptionLower.filter((word) => word !== "");
+
+    for (let i = lastWordIndex; i < transcriptionLower.length; i++) {
+      console.log(
+        "Expected word: ",
+        expectedWords[i],
+        " Transcription word: ",
+        transcriptionLower[i]
+      );
+      if (expectedWords[i] !== transcriptionLower[i]) {
+        setLastWordIndex(transcriptionLower.length);
+        return false;
+      }
+    }
+    setLastWordIndex(transcriptionLower.length);
     return true;
   };
 

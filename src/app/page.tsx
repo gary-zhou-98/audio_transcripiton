@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { useDeepgram } from "@/contexts/DeepgramContext";
 import AudioDownloader from "@/components/AudioDownloader/AudioDownloader";
 import PromptText from "@/components/Prompt/Prompt";
-
+import { usePrompt } from "@/contexts/PromptContext";
 export default function Home() {
   const {
     error: microphoneError,
@@ -26,9 +26,20 @@ export default function Home() {
     connection,
     connectionState,
   } = useDeepgram();
+  const { comparePromptWithTranscription } = usePrompt();
 
   // Add refs for keeping track of intervals
   const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startTranscription = () => {
+    startRecording();
+    connect();
+  };
+
+  const stopTranscription = () => {
+    disconnect();
+    stopRecording();
+  };
 
   // Add effect to handle connection state changes
   useEffect(() => {
@@ -60,16 +71,24 @@ export default function Home() {
   // Initial setup effect
   useEffect(() => {
     if (!isRecording && !(connectionState === "connected")) {
-      startRecording();
-      connect();
+      startTranscription();
     }
 
     // Cleanup: stop recording when component unmounts
     return () => {
-      stopRecording();
-      disconnect();
+      stopTranscription();
     };
   }, []); // Only run on mount and unmount
+
+  useEffect(() => {
+    if (transcript) {
+      const isPromptMatch = comparePromptWithTranscription(transcript);
+      if (!isPromptMatch) {
+        alert("You are not following the prompt");
+        stopTranscription();
+      }
+    }
+  }, [comparePromptWithTranscription, stopTranscription, transcript]);
 
   useEffect(() => {
     if (audioBlob && connectionState === "connected") {
@@ -79,11 +98,9 @@ export default function Home() {
 
   const handleButtonClick = () => {
     if (connectionState === "connected" && isRecording) {
-      disconnect();
-      stopRecording();
+      stopTranscription();
     } else {
-      connect();
-      startRecording();
+      startTranscription();
     }
   };
 
