@@ -1,5 +1,8 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Context
+This is an audio transcription and prompt reading webapp that was inspired by a recent practical coding interview I did. It utilizes the Deepgram API to transcribe the audio and I used ChatGPT to generate few prompts for the user to read, along with a naive algorithm to detect correctness of user's speech according to the prompt. It is a fun exercise I did and is not meant for production use. Check out the [ Deepgram & Vercel NextJS Template](https://deepgram.com/partners/deepgram-vercel-next-js-templates) which is the original inspiration.
+. 
 ## Getting Started
 
 First, run the development server:
