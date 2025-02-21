@@ -26,7 +26,6 @@ export const PromptProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const selectPrompt = (prompt: Prompt) => {
-    console.log(prompt);
     setSelectedPrompt(prompt);
   };
 
@@ -68,23 +67,13 @@ export const PromptProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Check if whole prompt is transcribed if user is done recording
     if (isFinal) {
-      // console.log("isFinal");
-      // console.log("transcriptionLower length: ", transcriptionLower.length);
-      // console.log("expectedWords length: ", expectedWords.length);
       isTranscriptionCorrect =
         transcriptionLower.length === expectedWords.length;
-      console.log("isTranscriptionCorrect: ", isTranscriptionCorrect);
       setIsTranscriptionCorrect(isTranscriptionCorrect);
       return isTranscriptionCorrect;
     }
 
     for (let i = lastWordIndex; i < transcriptionLower.length; i++) {
-      console.log(
-        "Expected word: ",
-        expectedWords[i],
-        " Transcription word: ",
-        transcriptionLower[i]
-      );
       if (expectedWords[i] !== transcriptionLower[i]) {
         setLastWordIndex(0);
         isTranscriptionCorrect = false;
